@@ -3,6 +3,7 @@ import { useState } from "react";
 import { v4 as uuidV4 } from "uuid";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
+import Button from "./ui/Button";
 
 const JoinForm = () => {
 
@@ -73,13 +74,14 @@ const JoinForm = () => {
             </div>
 
             <div className="mt-4 flex items-center justify-center">
-                <button
+                <div className="w-1/3">
+                <Button
                     type="button"
-                    className="py-1 px-8 bg-[#4CAF50] hover:bg-[#43A047] rounded-md text-white"
                     onClick={JoinRoom}
                 >
                     Join
-                </button>
+                </Button>
+                </div>
             </div>
 
             <p 
