@@ -7,7 +7,6 @@ interface avatarProp {
 const Avatar: React.FC<avatarProp> = ({name}) => {
 
     const capitalizeFirstLetter = (name: string): string => {
-        console.log(name.slice(1))
         return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     }
 
