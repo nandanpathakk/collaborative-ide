@@ -14,7 +14,6 @@ import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
 import { lintKeymap } from "@codemirror/lint";
 import { history, historyKeymap } from "@codemirror/commands";
 import { closeBrackets } from "@codemirror/autocomplete";
-import { getsocket } from "@/socket";
 
 const customTheme = EditorView.theme({
   '&': {
@@ -87,7 +86,6 @@ const highlighting = HighlightStyle.define([
 
 const Editor = () => {
   const editorRef = useRef(null);
-  const socket = getsocket();
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -141,11 +139,6 @@ const Editor = () => {
       parent: editorRef.current
     });
 
-    socket.on('change', (instance, changes):any =>{
-      console.log("changes", changes)
-      const {origin} = changes;
-    })
-    
     return () => view.destroy();
   }, []);
 

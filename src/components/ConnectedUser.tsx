@@ -1,82 +1,59 @@
-"use client"
-import { useEffect, useRef, useState } from "react";
+"use client";
+import { useEffect, useState } from "react";
 import Avatar from "./ui/Avatar";
 import { getsocket } from "@/socket";
-import { Socket } from "socket.io-client";
 import toast from "react-hot-toast";
-import { useRouter, useParams } from "next/navigation";
-import { memo } from "react";
+import { useParams } from "next/navigation";
 
 const ConnectedUser = () => {
+  const { roomId } = useParams();
+  const socket = getsocket();
+  const [connectedUsers, setConnectedUsers] = useState<any[]>([]);
 
-    const router = useRouter();
-    // const params = useParams();
-    // console.log(params)
-    const {roomId} = useParams();
-    const socket = getsocket();
-    const [ connectedUser, setConnectedUser ] = useState<any>([])
+  useEffect(() => {
+    const userName = sessionStorage.getItem("userName");
 
+    if (!userName) {
+      toast.error("Username not found in session. Please join again.");
+      return;
+    }
 
-    console.log("outside useeffect")
+    // Emit the join event to the server
+    socket.emit("join", { roomId, userName });
 
-    useEffect(() => {
-        console.log("inside mounted")
+    // Listen for the `joined` event and update the state
+    socket.on("joined", ({ clients, userName: joinedUserName }) => {
+      setConnectedUsers(clients);
 
-            function handleError(e: Error){
-                console.log("socker error", e);
-                toast.error("Socker connection failed, try again later");
-                router.push("/joinroom")
-            }
+      if (joinedUserName !== userName) {
+        toast.success(`${joinedUserName} joined the room.`);
+      } else {
+        toast.success("You successfully joined the room.");
+      }
+    });
 
-            socket.on('connect_error', (err) => handleError(err));
-            socket.on('connect_failed', (err) => handleError(err));
-            
-            socket.emit("join", {
-                roomId,
-                userName: sessionStorage.getItem("userName")
-            })
+    // Listen for the `disconnected` event and update the state
+    socket.on("disconnected", ({ socketId, userName: leftUserName }) => {
+      setConnectedUsers((prev) =>
+        prev.filter((client) => client.socketId !== socketId)
+      );
+      toast.success(`${leftUserName} left the room.`);
+    });
 
-            //listen event
-            socket.on("joined", ({clients, userName, socketId}) => {
-                if(userName !== sessionStorage.getItem('userName')) {
-                    toast.success(`${userName} joined the room`)
-                }
-                if (userName === sessionStorage.getItem('userName')){
-                    toast.success("You joined room successfully")
-                }
-                setConnectedUser(clients)
-                console.log(clients)
-            })
+    // Cleanup listeners on unmount
+    return () => {
+      socket.off("joined");
+      socket.off("disconnected");
+    };
+  }, [socket, roomId]);
 
-            //listning for disconnected
-            socket.on("disconnected",({socketId, userName}) => {
-                    toast.success(`${userName} left the room`)
-                    //filters and remove the disconnected user form the state
-                    setConnectedUser((prev:any ) => {
-                        return prev.filter((client: any) => client.socketId !== socketId
-                    )
-                    })
-            })
-
-        //cleanup funciton
-
-        return () => {
-                socket.off("connect_error");
-                socket.off("connect_failed");
-                socket.off("joined")
-                socket.disconnect();
-        }
-
-    },[socket, roomId, router])
-
-
-    return <div className="grid grid-cols-3 gap-y-5">
-        {
-            connectedUser.map((user:any) => {
-                return <Avatar key={user.socketId} name={user.userName} />
-            })
-        }
-        
+  return (
+    <div className="grid grid-cols-3 gap-y-5">
+      {connectedUsers.map((user) => (
+        <Avatar key={user.socketId} name={user.userName} />
+      ))}
     </div>
-}
+  );
+};
+
 export default ConnectedUser;
