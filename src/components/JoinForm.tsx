@@ -15,7 +15,7 @@ const JoinForm = () => {
 
     const createNewRoom = () => {
         const newRoomId = uuidV4();
-        console.log(newRoomId);
+        // console.log(newRoomId);
         setRoomId(newRoomId) 
         toast.success("New Room Created")
     }

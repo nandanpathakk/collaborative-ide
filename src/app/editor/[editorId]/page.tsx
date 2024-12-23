@@ -13,6 +13,8 @@ import { bracketMatching, foldGutter, foldKeymap } from "@codemirror/language";
 import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
 import { lintKeymap } from "@codemirror/lint";
 import { history, historyKeymap } from "@codemirror/commands";
+import { closeBrackets } from "@codemirror/autocomplete";
+import { getsocket } from "@/socket";
 
 const customTheme = EditorView.theme({
   '&': {
@@ -85,6 +87,7 @@ const highlighting = HighlightStyle.define([
 
 const Editor = () => {
   const editorRef = useRef(null);
+  const socket = getsocket();
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -99,7 +102,7 @@ const Editor = () => {
         
         // Bracket handling
         bracketMatching(),
-        
+        closeBrackets(),
         highlightSelectionMatches(),
         
         // Language support
@@ -120,11 +123,11 @@ const Editor = () => {
           ...historyKeymap,
           ...foldKeymap,
           ...searchKeymap,
-          ...lintKeymap,
+        //   ...lintKeymap,
           indentWithTab,
         ]),
         
-        // Editor update listener for automatic height adjustment
+        // Editor update listener
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             update.view.requestMeasure();
@@ -138,6 +141,11 @@ const Editor = () => {
       parent: editorRef.current
     });
 
+    socket.on('change', (instance, changes):any =>{
+      console.log("changes", changes)
+      const {origin} = changes;
+    })
+    
     return () => view.destroy();
   }, []);
 

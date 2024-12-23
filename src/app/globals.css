@@ -1,15 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @layer base {
   :root {
     --radius: 0.5rem
   }
 }
 
-/* body{
+body{
   background-color: #171717;
-} */
+}
 
 .cm-content{
   height: 100dvh; 
